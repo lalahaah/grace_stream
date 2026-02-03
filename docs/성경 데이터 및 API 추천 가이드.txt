@@ -1,0 +1,34 @@
+[Grace Stream] 성경 데이터 및 API 상세 가이드성경 앱 개발의 핵심인 텍스트 데이터를 안정적으로 확보하고, Flutter의 Hive/Isar에 최적화된 형태로 가공하기 위한 리소스와 가이드를 제공합니다.1. 한국어 성경 리소스 검토 및 추천기존 외부 링크의 접근성 이슈를 반영하여, 가장 안정적인 로컬 데이터 활용 방안을 제안합니다.1.1. 추천 데이터: korean_bible.json (업로드 데이터)현재 확보하신 데이터 중 가장 권장하는 포맷입니다.구조: { "BOOK_ID": { "Chapter": { "Verse": "Text" } } }장점: * 장/절 번호가 명시적이라 인덱스 오류가 적습니다.data['GEN']['1']['1']과 같은 방식으로 특정 구절에 즉시 접근이 가능합니다.데이터 가공(Parsing) 시 로직이 가장 직관적입니다.1.2. 대안 데이터: ko_ko.json (업로드 데이터)구조: [ { "abbrev": "gn", "chapters": [ [ "verse1", "verse2" ] ] } ]특징: 데이터가 리스트 형태로 되어 있어 전체를 순회(Iteration)하며 읽기에 유리하지만, 특정 절을 찾으려면 인덱스 계산(chapters[0][0])이 필요합니다.2. 영어 및 기타 언어 성경 리소스scrollmapper/bible_databases특징: KJV 등 30개 이상의 언어 성경을 제공하는 가장 표준적인 리포지토리입니다.bible-api.com특징: 별도의 데이터 구축 없이 HTTP 통신만으로 구절을 가져올 때 유용합니다.3. Flutter 적용을 위한 모델 클래스 (Data Model)korean_bible.json 구조를 플러터에서 효율적으로 다루기 위한 데이터 모델 예시입니다.class BibleVerse {
+  final String book;
+  final String chapter;
+  final String verse;
+  final String text;
+
+  BibleVerse({required this.book, required this.chapter, required this.verse, required this.text});
+
+  // JSON 구조를 평면화(Flattening)하여 Hive에 저장하기 위한 팩토리 메서드
+  factory BibleVerse.fromMap(String book, String chap, String v, String txt) {
+    return BibleVerse(book: book, chapter: chap, verse: v, text: txt);
+  }
+}
+4. 데이터 임포트 및 Hive 저장 전략JSON 파일을 앱에 내장하고 최초 실행 시 로컬 DB에 옮겨 담는 과정입니다.Asset 등록: pubspec.yaml의 assets 섹션에 korean_bible.json을 추가합니다.데이터 파싱 및 저장:import 'dart:convert';
+import 'package:flutter/services.dart';
+
+Future<void> importBibleData() async {
+  final String response = await rootBundle.loadString('assets/korean_bible.json');
+  final data = json.decode(response);
+  
+  // Hive Box 오픈
+  var bibleBox = Hive.box('bible_box');
+
+  // 중첩 루프를 통해 데이터를 Hive에 저장
+  data.forEach((bookId, chapters) {
+    chapters.forEach((chapterNum, verses) {
+      verses.forEach((verseNum, text) {
+        final key = "${bookId}_${chapterNum}_${verseNum}";
+        bibleBox.put(key, text);
+      });
+    });
+  });
+}
+사용자 경험 향상: 마이그레이션 중에는 로딩 화면(Progress Indicator)을 보여주어 앱이 멈춘 것이 아님을 알립니다.5. 법적 안전장치 및 팁개역한글 명시: 제공해주신 데이터는 문체상 '개역한글(Public Domain)'로 판단됩니다. 앱의 정보란에 **"본 서비스의 성경 본문은 저작권이 만료된 개역한글판을 사용합니다"**라는 문구를 반드시 포함하세요.특수문자 처리: 일부 데이터에 포함된 느낌표(!)나 고어 표현은 AI 해설 생성 시 가독성을 해칠 수 있으므로, 필요시 정규표현식을 통해 전처리(Cleaning)하는 과정을 추천합니다.

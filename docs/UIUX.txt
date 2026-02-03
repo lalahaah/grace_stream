@@ -1,0 +1,237 @@
+import React, { useState } from 'react';
+import { 
+  Book, Play, Bookmark, MessageSquare, ChevronRight, 
+  Search, Menu, Heart, Music, Video, Pause, 
+  SkipForward, SkipBack, X, Share2, Home, User
+} from 'lucide-react';
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('home');
+  const [currentSong, setCurrentSong] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
+
+  // 가상의 데이터
+  const dailyVerse = {
+    ref: "창세기 1:1",
+    text: "태초에 하나님이 천지를 창조하시니라",
+    aiSummary: "이 구절은 모든 존재의 근원이 하나님임을 선포합니다. 혼돈 속에서 질서를 만드시는 하나님의 능력을 묵상해보세요.",
+    ccm: {
+      id: 101,
+      title: "주 하나님 지으신 모든 세계",
+      artist: "웨이메이커 (Way Maker)",
+      cover: "https://images.unsplash.com/photo-1519307212971-dd9561667ffb?w=400&q=80",
+      videoId: "dQw4w9WgXcQ"
+    }
+  };
+
+  const categories = [
+    { name: "위로", icon: "🕊️" },
+    { name: "감사", icon: "🙏" },
+    { name: "평안", icon: "🌿" },
+    { name: "용기", icon: "🦁" }
+  ];
+
+  const mockWorships = [
+    { id: 1, title: "은혜 아래 (Under Grace)", artist: "웨이메이커", cover: "https://images.unsplash.com/photo-1519307212971-dd9561667ffb?w=400&q=80" },
+    { id: 2, title: "길을 만드시는 주", artist: "레위지파", cover: "https://images.unsplash.com/photo-1499209974431-9dac3adaf471?w=400&q=80" },
+    { id: 3, title: "임재 (Presence)", artist: "마커스워십", cover: "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=400&q=80" }
+  ];
+
+  const handlePlayCCM = (song) => {
+    setCurrentSong(song);
+    setIsPlaying(true);
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-[#F7F8FA] font-sans text-slate-800 max-w-md mx-auto shadow-2xl overflow-hidden border-x relative">
+      
+      {/* Top Header */}
+      <header className="p-6 flex justify-between items-center bg-white z-10">
+        <Menu className="text-slate-400 cursor-pointer" size={24} />
+        <div className="flex flex-col items-center">
+          <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Sunday, Feb 1</span>
+          <span className="text-sm font-bold text-slate-800">Grace Stream</span>
+        </div>
+        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="profile" className="w-8 h-8" />
+        </div>
+      </header>
+
+      <main className="flex-1 overflow-y-auto p-6 space-y-6 pb-32">
+        
+        {activeTab === 'home' && (
+          <>
+            {/* Progress Card */}
+            <div className="bg-indigo-600 rounded-3xl p-6 text-white flex justify-between items-center shadow-lg shadow-indigo-200">
+              <div>
+                <h2 className="text-lg font-bold mb-1">오늘의 통독 목표</h2>
+                <p className="text-indigo-100 text-xs italic">"창세기 1-3장 읽기"</p>
+                <button className="mt-4 bg-white text-indigo-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-50 transition-colors">
+                  읽기 시작하기
+                </button>
+              </div>
+              <div className="relative flex items-center justify-center">
+                 <svg className="w-20 h-20 transform -rotate-90">
+                    <circle cx="40" cy="40" r="35" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-indigo-500" />
+                    <circle cx="40" cy="40" r="35" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={220} strokeDashoffset={220 - (220 * 0.65)} className="text-white transition-all duration-1000" />
+                 </svg>
+                 <span className="absolute text-sm font-bold">65%</span>
+              </div>
+            </div>
+
+            {/* Categories */}
+            <div className="grid grid-cols-4 gap-4">
+              {categories.map((cat) => (
+                <div key={cat.name} className="flex flex-col items-center space-y-2">
+                  <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-50 text-xl hover:scale-105 transition-transform cursor-pointer">
+                    {cat.icon}
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-500">{cat.name}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* AI Daily Verse Card */}
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4">
+                <Bookmark size={18} className="text-slate-300" />
+              </div>
+              <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-md">TODAY'S VERSE</span>
+              <h3 className="mt-4 text-xl font-serif font-bold text-slate-800 leading-snug tracking-tight italic">
+                "{dailyVerse.text}"
+              </h3>
+              <p className="mt-2 text-sm text-slate-400">{dailyVerse.ref}</p>
+              
+              <div className="mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare size={14} className="text-indigo-500" />
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tighter">AI 해설</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {dailyVerse.aiSummary}
+                </p>
+              </div>
+
+              {/* Recommended CCM Section */}
+              <div 
+                className="mt-4 flex items-center justify-between group cursor-pointer"
+                onClick={() => handlePlayCCM(dailyVerse.ccm)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white">
+                    <Play size={12} fill="white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase">추천 CCM</p>
+                    <p className="text-xs font-bold text-slate-700">{dailyVerse.ccm.title}</p>
+                  </div>
+                </div>
+                <ChevronRight size={18} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
+              </div>
+            </div>
+          </>
+        )}
+
+        {activeTab === 'music' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold">인기 워십 리스트</h2>
+              <span className="text-xs text-indigo-600 font-bold">더보기</span>
+            </div>
+            <div className="space-y-3">
+              {mockWorships.map((song) => (
+                <div 
+                  key={song.id} 
+                  className="bg-white p-3 rounded-2xl shadow-sm border border-slate-50 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                  onClick={() => handlePlayCCM(song)}
+                >
+                  <img src={song.cover} className="w-12 h-12 rounded-xl object-cover" alt="cover" />
+                  <div className="flex-1">
+                    <h4 className="text-sm font-bold">{song.title}</h4>
+                    <p className="text-[11px] text-slate-400">{song.artist}</p>
+                  </div>
+                  <button className="p-2 text-slate-300 hover:text-indigo-600" onClick={(e) => {
+                    e.stopPropagation();
+                    handlePlayCCM(song);
+                    setShowVideo(true);
+                  }}>
+                    <Video size={20} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Video Overlay Layer */}
+      {showVideo && currentSong && (
+        <div className="absolute inset-0 z-50 bg-black/95 flex flex-col animate-in fade-in zoom-in duration-300">
+          <div className="p-4 flex justify-between items-center text-white">
+            <button onClick={() => setShowVideo(false)} className="p-2 hover:bg-white/10 rounded-full"><X className="w-6 h-6" /></button>
+            <div className="text-center">
+              <h3 className="font-bold text-sm">{currentSong.title}</h3>
+              <p className="text-[10px] text-white/60">{currentSong.artist}</p>
+            </div>
+            <button className="p-2 hover:bg-white/10 rounded-full"><Share2 className="w-6 h-6" /></button>
+          </div>
+          <div className="flex-1 flex items-center justify-center p-4">
+            <div className="w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center space-y-4">
+              <Video className="w-12 h-12 text-indigo-500 animate-pulse" />
+              <p className="text-white/40 text-[10px] uppercase tracking-widest">YouTube IFrame API 연결 중...</p>
+            </div>
+          </div>
+          <div className="p-10 text-center">
+            <p className="text-white/60 text-xs italic leading-relaxed">
+              "찬양 중에 거하시는 주님을 만나보세요"
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Mini Player */}
+      {currentSong && !showVideo && (
+        <div className="absolute bottom-24 left-6 right-6 bg-white/90 backdrop-blur-md border border-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 animate-in slide-in-from-bottom-4">
+          <img src={currentSong.cover} className="w-10 h-10 rounded-lg shadow-sm" alt="playing" />
+          <div className="flex-1 min-w-0" onClick={() => setShowVideo(true)}>
+            <h4 className="text-[11px] font-bold truncate">{currentSong.title}</h4>
+            <p className="text-[9px] text-slate-400 truncate">{currentSong.artist}</p>
+          </div>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setIsPlaying(!isPlaying)} className="p-2 bg-indigo-600 text-white rounded-full">
+              {isPlaying ? <Pause size={14} fill="white" /> : <Play size={14} fill="white" />}
+            </button>
+            <button onClick={() => setCurrentSong(null)} className="p-1 text-slate-300">
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Navigation */}
+      <nav className="absolute bottom-6 left-6 right-6 h-16 bg-white rounded-2xl shadow-xl border border-slate-50 flex items-center justify-around px-2 z-10">
+        <button onClick={() => setActiveTab('home')} className={`p-2 rounded-xl transition-all ${activeTab === 'home' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-300'}`}>
+          <Home size={20} />
+        </button>
+        <button onClick={() => setActiveTab('music')} className={`p-2 rounded-xl transition-all ${activeTab === 'music' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-300'}`}>
+          <Music size={20} />
+        </button>
+        
+        {/* Center Floating Button (AI/Search) */}
+        <button className="w-12 h-12 bg-indigo-600 rounded-full shadow-lg shadow-indigo-200 flex items-center justify-center text-white -mt-10 border-4 border-white active:scale-95 transition-transform">
+          <Search size={20} />
+        </button>
+
+        <button onClick={() => setActiveTab('bible')} className={`p-2 rounded-xl transition-all ${activeTab === 'bible' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-300'}`}>
+          <Book size={20} />
+        </button>
+        <button onClick={() => setActiveTab('saved')} className={`p-2 rounded-xl transition-all ${activeTab === 'saved' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-300'}`}>
+          <Bookmark size={20} />
+        </button>
+      </nav>
+    </div>
+  );
+};
+
+export default App;
