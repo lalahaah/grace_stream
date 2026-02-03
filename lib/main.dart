@@ -5,7 +5,9 @@ import 'package:grace_stream/screens/bible_viewer_screen.dart';
 import 'package:grace_stream/screens/worship_screen.dart';
 import 'package:grace_stream/providers/player_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:grace_stream/services/user_action_service.dart';
 import 'package:grace_stream/models/bible.dart';
+import 'package:grace_stream/models/user_action.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
 
@@ -17,6 +19,15 @@ void main() async {
   if (!Hive.isAdapterRegistered(0)) {
     Hive.registerAdapter(BibleVerseAdapter());
   }
+  if (!Hive.isAdapterRegistered(1)) {
+    Hive.registerAdapter(HighlightAdapter());
+  }
+  if (!Hive.isAdapterRegistered(2)) {
+    Hive.registerAdapter(BookmarkAdapter());
+  }
+
+  // Initialize User Action Service
+  await BibleUserActionService().init();
 
   // TODO: Setup Firebase when configuration is ready
   // await Firebase.initializeApp(

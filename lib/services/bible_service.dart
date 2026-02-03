@@ -13,8 +13,17 @@ class BibleService {
     if (!Hive.isAdapterRegistered(0)) {
       Hive.registerAdapter(BibleVerseAdapter());
     }
-    await Hive.openBox<BibleVerse>(_boxName);
+    if (!Hive.isBoxOpen(_boxName)) {
+      await Hive.openBox<BibleVerse>(_boxName);
+    }
     await _importBibleDataIfNeeded();
+  }
+
+  Future<Box<BibleVerse>> _getBox() async {
+    if (!Hive.isBoxOpen(_boxName)) {
+      await Hive.openBox<BibleVerse>(_boxName);
+    }
+    return Hive.box<BibleVerse>(_boxName);
   }
 
   Future<void> _importBibleDataIfNeeded() async {
@@ -73,7 +82,7 @@ class BibleService {
   }
 
   Future<List<String>> getBooks() async {
-    final box = Hive.box<BibleVerse>(_boxName);
+    final box = await _getBox();
     final books = box.values.map((v) => v.book).toSet().toList();
     // Maintain original order if possible, though toSet might break it.
     // Ideally, we'd use a sorted list from BibleConstants.
@@ -83,7 +92,7 @@ class BibleService {
   }
 
   Future<List<String>> getChapters(String bookId) async {
-    final box = Hive.box<BibleVerse>(_boxName);
+    final box = await _getBox();
     final chapters = box.values
         .where((v) => v.book == bookId)
         .map((v) => v.chapter)
@@ -96,7 +105,7 @@ class BibleService {
   }
 
   Future<BibleChapter?> getChapter(String bookId, String chapterNum) async {
-    final box = Hive.box<BibleVerse>(_boxName);
+    final box = await _getBox();
     if (box.isEmpty) {
       await _importBibleDataIfNeeded();
     }
