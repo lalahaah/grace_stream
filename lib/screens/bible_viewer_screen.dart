@@ -7,6 +7,7 @@ import 'package:grace_stream/services/user_action_service.dart';
 import 'package:grace_stream/services/ai_service.dart';
 import 'package:grace_stream/models/user_action.dart';
 import 'package:grace_stream/models/bible.dart';
+import 'package:grace_stream/widgets/common_app_bar.dart';
 
 class BibleViewerScreen extends ConsumerWidget {
   const BibleViewerScreen({super.key});
@@ -436,13 +437,15 @@ class BibleViewerScreen extends ConsumerWidget {
     final bookName = BibleConstants.getBookName(currentPos.bookId);
 
     return Scaffold(
-      appBar: AppBar(
-        title: InkWell(
+      backgroundColor: AppColors.backgroundLight,
+      appBar: CommonAppBar.standard(
+        context,
+        centerWidget: InkWell(
           onTap: () => _showSelectionDialog(context, ref),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.indigo.withValues(alpha: 0.05),
+              color: AppColors.primary.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -450,15 +453,22 @@ class BibleViewerScreen extends ConsumerWidget {
               children: [
                 Text(
                   '$bookName ${currentPos.chapter}장',
-                  style: const TextStyle(fontSize: 18, color: Colors.indigo),
+                  style: const TextStyle(
+                    fontSize: 14, // 홈 화면 스타일과 맞추기 위해 약간 축소
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(Icons.arrow_drop_down, color: Colors.indigo),
+                const Icon(
+                  Icons.arrow_drop_down,
+                  color: AppColors.primary,
+                  size: 18,
+                ),
               ],
             ),
           ),
         ),
-        centerTitle: true,
       ),
       body: Stack(
         children: [
@@ -467,7 +477,12 @@ class BibleViewerScreen extends ConsumerWidget {
               .when(
                 data: (chapter) {
                   if (chapter == null) {
-                    return const Center(child: Text('해당 장을 찾을 수 없습니다.'));
+                    return const Center(
+                      child: Text(
+                        '해당 장을 찾을 수 없습니다.',
+                        style: TextStyle(color: AppColors.textMain),
+                      ),
+                    );
                   }
                   return ListView.builder(
                     padding: const EdgeInsets.all(16.0),
@@ -639,7 +654,12 @@ class BibleViewerScreen extends ConsumerWidget {
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text('에러가 발생했습니다: $err')),
+                error: (err, stack) => Center(
+                  child: Text(
+                    '에러가 발생했습니다: $err',
+                    style: const TextStyle(color: AppColors.error),
+                  ),
+                ),
               ),
         ],
       ),

@@ -18,13 +18,17 @@ class YoutubeService {
   void _loadApiKey() {
     if (_apiKey.isEmpty) {
       try {
-        final file = File('secrets.json');
+        // 현재 작업 디렉토리를 기준으로 secrets.json 파일을 찾습니다.
+        final file = File(Directory.current.path + '/secrets.json');
         if (file.existsSync()) {
           final content = jsonDecode(file.readAsStringSync());
-          _apiKey = content['YOUTUBE_API_KEY'] ?? '';
+          final key = content['YOUTUBE_API_KEY'] ?? '';
+          if (key.isNotEmpty) {
+            _apiKey = key;
+          }
         }
-      } catch (_) {
-        // Ignore
+      } catch (e) {
+        print('Error loading YouTube API Key from secrets.json: $e');
       }
     }
   }

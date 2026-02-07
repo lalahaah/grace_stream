@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:grace_stream/services/user_action_service.dart';
 import 'package:grace_stream/models/bible.dart';
 import 'package:grace_stream/models/user_action.dart';
+import 'package:grace_stream/widgets/common_app_bar.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
 
@@ -439,6 +440,25 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 32),
+              // 고도화: 가사 및 성경 연동 버튼
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildPlayerActionBtn(Icons.article_outlined, '가사 보기', () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('준비 중인 기능입니다.')),
+                      );
+                    }),
+                    _buildPlayerActionBtn(Icons.menu_book, '성경 이동', () {
+                      ref.read(playerProvider.notifier).setShowVideo(false);
+                      setState(() => _currentIndex = 1);
+                    }),
+                  ],
+                ),
+              ),
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.all(40.0),
@@ -455,6 +475,25 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPlayerActionBtn(
+    IconData icon,
+    String label,
+    VoidCallback onTap,
+  ) {
+    return Column(
+      children: [
+        IconButton(
+          onPressed: onTap,
+          icon: Icon(icon, color: Colors.white, size: 28),
+        ),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white70, fontSize: 11),
+        ),
+      ],
     );
   }
 }
@@ -522,53 +561,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildSliverAppBar(BuildContext context) {
-    return SliverAppBar(
-      backgroundColor: Colors.white,
-      floating: true,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.menu, color: AppColors.textLight),
-        onPressed: () {
-          // Open drawer via scaffold key in ancestor
-          final scaffold = Scaffold.of(context);
-          if (scaffold.hasDrawer) {
-            scaffold.openDrawer();
-          }
-        },
-      ),
-      centerTitle: true,
-      title: Column(
-        children: [
-          Text(
-            'SUNDAY, FEB 1',
-            style: TextStyle(
-              color: AppColors.textLight,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
-            ),
-          ),
-          const Text(
-            'Grace Stream',
-            style: TextStyle(
-              color: AppColors.textMain,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: CircleAvatar(
-            radius: 18,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-            child: const Icon(Icons.person, color: AppColors.primary, size: 20),
-          ),
-        ),
-      ],
-    );
+    return CommonAppBar.sliver(context);
   }
 
   Widget _buildProgressCard(BuildContext context) {
@@ -881,7 +874,18 @@ class LibraryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('보관함')),
+      backgroundColor: AppColors.backgroundLight,
+      appBar: CommonAppBar.standard(
+        context,
+        centerWidget: const Text(
+          '보관함',
+          style: TextStyle(
+            color: AppColors.textMain,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       body: const Center(child: Text('북마크 및 기록 (구현 예정)')),
     );
   }

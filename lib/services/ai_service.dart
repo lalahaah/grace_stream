@@ -18,13 +18,16 @@ class AIService {
     // If not provided via dart-define, try to load from secrets.json (for local dev)
     if (_apiKey.isEmpty) {
       try {
-        final file = File('secrets.json');
+        final file = File(Directory.current.path + '/secrets.json');
         if (file.existsSync()) {
           final content = jsonDecode(file.readAsStringSync());
-          _apiKey = content['GEMINI_API_KEY'] ?? '';
+          final key = content['GEMINI_API_KEY'] ?? '';
+          if (key.isNotEmpty) {
+            _apiKey = key;
+          }
         }
-      } catch (_) {
-        // Ignore errors in production or if file is missing
+      } catch (e) {
+        print('Error loading Gemini API Key from secrets.json: $e');
       }
     }
     _model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: _apiKey);

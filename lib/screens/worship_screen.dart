@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grace_stream/theme/app_theme.dart';
 import 'package:grace_stream/providers/player_provider.dart';
 import 'package:grace_stream/providers/worship_provider.dart';
+import 'package:grace_stream/widgets/common_app_bar.dart';
 
 class WorshipScreen extends ConsumerStatefulWidget {
   const WorshipScreen({super.key});
@@ -58,38 +59,21 @@ class _WorshipScreenState extends ConsumerState<WorshipScreen> {
       body: CustomScrollView(
         slivers: [
           // 1. SliverAppBar
-          SliverAppBar(
-            expandedHeight: 120.0,
-            floating: true,
+          CommonAppBar.sliver(
+            context,
             pinned: true,
-            backgroundColor: Colors.white,
-            elevation: 0,
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'CCM & 워십',
-                style: TextStyle(
-                  color: AppColors.textMain,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-              centerTitle: false,
-              titlePadding: const EdgeInsetsDirectional.only(
-                start: 24,
-                bottom: 16,
+            centerWidget: const Text(
+              'CCM & 워십',
+              style: TextStyle(
+                color: AppColors.textMain,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
               ),
             ),
-            actions: [
+            additionalActions: [
               IconButton(
                 onPressed: () => _showSearchDialog(context),
                 icon: const Icon(Icons.search, color: AppColors.textLight),
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.notifications_none,
-                  color: AppColors.textLight,
-                ),
               ),
             ],
           ),
