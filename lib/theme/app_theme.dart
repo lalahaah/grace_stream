@@ -3,9 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // Main Colors
-  static const Color primary = Color(0xFF4F46E5); // Indigo
+  static const Color primary = Color(0xFF1E3A8A); // Deep Blue (Navy)
   static const Color secondary = Color(0xFF64748B); // Slate
-  static const Color accent = Color(0xFFF59E0B); // Amber
+  static const Color accent = Color(0xFF0EA5E9); // Sky Blue Accent (딥블루와 어울림)
 
   // Background & Surface
   static const Color backgroundLight = Color(0xFFF7F8FA);
