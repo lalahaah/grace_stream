@@ -7,12 +7,15 @@ class Song {
   final String cover;
   final String videoId;
 
+  final List<String> tags;
+
   Song({
     required this.id,
     required this.title,
     required this.artist,
     required this.cover,
     required this.videoId,
+    this.tags = const [],
   });
 }
 
