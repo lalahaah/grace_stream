@@ -23,6 +23,7 @@ import 'package:grace_stream/models/user_action.dart';
 import 'package:grace_stream/widgets/reading_goal_dialog.dart';
 import 'package:grace_stream/services/youtube_service.dart';
 import 'package:grace_stream/services/reading_goal_service.dart';
+import 'package:grace_stream/services/config_service.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
 
@@ -47,6 +48,7 @@ void main() async {
   // Initialize Services
   await BibleUserActionService().init();
   await ReadingGoalService().init();
+  await configService.init();
 
   // Placeholder for future Firebase initialization
   // await Firebase.initializeApp(
@@ -96,7 +98,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     // 1. 단일 플레이어 위젯 정의 (상태 유지를 위해 고정)
     final playerWidget = playerState.currentSong != null
         ? YoutubePlayer(
-            key: const ValueKey('global_youtube_player'),
+            key: ValueKey(playerState.currentSong?.videoId),
             controller: ref.read(playerProvider.notifier).controller!,
             showVideoProgressIndicator: true,
             progressIndicatorColor: AppColors.primary,

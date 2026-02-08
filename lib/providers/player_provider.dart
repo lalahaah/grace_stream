@@ -50,11 +50,11 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
 
   void play(Song song) {
     debugPrint(
-      'DEBUG: PlayerNotifier.play() called for videoId: ${song.videoId}',
+      'DEBUG: PlayerNotifier.play() - Title: ${song.title}, videoId: ${song.videoId}',
     );
 
     if (_controller != null) {
-      debugPrint('DEBUG: Controller exists. Using load() for new song.');
+      debugPrint('DEBUG: Controller exists. Calling load(${song.videoId})');
       _controller!.load(song.videoId);
       state = state.copyWith(currentSong: song, isPlaying: true);
       return;

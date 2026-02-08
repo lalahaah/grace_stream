@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:grace_stream/services/config_service.dart';
 
 final aiServiceProvider = Provider((ref) => AIService());
 
 class AIService {
   // Use a secure way to store/retrieve API Key in production
-  static String _apiKey = const String.fromEnvironment('GEMINI_API_KEY');
+  static String get _apiKey => configService.geminiApiKey;
   late GenerativeModel _model;
 
   AIService() {
@@ -15,8 +16,11 @@ class AIService {
   }
 
   void _initModel() {
-    // 샌드박스 환경 문제를 원천 차단하기 위해 키를 직접 주입합니다.
-    _apiKey = 'AIzaSyDKC8wr_Mz5flqk8vy4Ko7zaVtS8VV9Jgk';
+    // 보안을 위해 하드코딩된 키를 제거했습니다.
+    // 실행 시 --dart-define=GEMINI_API_KEY=your_key 또는 secrets.json을 활용하세요.
+    if (_apiKey.isEmpty) {
+      debugPrint('WARNING: GEMINI_API_KEY is not set via environment.');
+    }
     _model = GenerativeModel(model: 'gemini-2.0-flash', apiKey: _apiKey);
   }
 

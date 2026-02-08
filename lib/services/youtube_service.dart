@@ -2,12 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grace_stream/providers/player_provider.dart';
+import 'package:grace_stream/services/config_service.dart';
 
 final youtubeServiceProvider = Provider((ref) => YoutubeService());
 
 class YoutubeService {
   final Dio _dio = Dio();
-  static String _apiKey = const String.fromEnvironment('YOUTUBE_API_KEY');
+  static String get _apiKey => configService.youtubeApiKey;
   final String _baseUrl = 'https://www.googleapis.com/youtube/v3';
 
   YoutubeService() {
@@ -17,8 +18,10 @@ class YoutubeService {
   }
 
   void _loadApiKey() {
-    // 샌드박스 환경 문제를 원천 차단하기 위해 키를 직접 주입합니다.
-    _apiKey = 'AIzaSyBKBnIq5eTfiIFkefST1jVwI4SSMgPQjsY';
+    // 보안을 위해 하드코딩된 키를 제거했습니다.
+    if (_apiKey.isEmpty) {
+      debugPrint('WARNING: YOUTUBE_API_KEY is not set via environment.');
+    }
   }
 
   Future<List<Song>> searchWorship(

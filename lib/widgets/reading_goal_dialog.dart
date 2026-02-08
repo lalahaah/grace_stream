@@ -136,9 +136,10 @@ class _ReadingGoalDialogState extends ConsumerState<ReadingGoalDialog> {
                       );
 
                   if (!mounted) return;
-
+                  final navigator = Navigator.of(context);
                   final messenger = ScaffoldMessenger.of(context);
-                  Navigator.pop(context);
+
+                  navigator.pop();
 
                   messenger.showSnackBar(
                     const SnackBar(content: Text('통독 목표가 설정되었습니다.')),
