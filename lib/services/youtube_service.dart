@@ -21,22 +21,36 @@ class YoutubeService {
     _apiKey = 'AIzaSyBKBnIq5eTfiIFkefST1jVwI4SSMgPQjsY';
   }
 
-  Future<List<Song>> searchWorship(String query) async {
-    debugPrint('DEBUG: YoutubeService.searchWorship(query: $query)');
+  Future<List<Song>> searchWorship(
+    String query, {
+    String order = 'relevance',
+  }) async {
+    debugPrint(
+      'DEBUG: YoutubeService.searchWorship(query: $query, order: $order)',
+    );
     if (_apiKey.isEmpty) {
       debugPrint('ERROR: YOUTUBE_API_KEY is empty.');
       return [];
     }
+
+    // 글로벌 검색 품질을 위해 핵심 키워드를 보강합니다.
+    final enhancedQuery =
+        query.toLowerCase().contains('ccm') ||
+            query.toLowerCase().contains('worship') ||
+            query.toLowerCase().contains('praise')
+        ? query
+        : '$query CCM Worship Praise';
 
     try {
       final response = await _dio.get(
         '$_baseUrl/search',
         queryParameters: {
           'part': 'snippet',
-          'q': query,
+          'q': enhancedQuery,
           'type': 'video',
           'videoEmbeddable': 'true',
-          'maxResults': 10,
+          'order': order, // relevance, viewCount, date, rating, title
+          'maxResults': 15,
           'key': _apiKey,
         },
       );

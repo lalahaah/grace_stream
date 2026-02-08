@@ -24,34 +24,6 @@ class _WorshipScreenState extends ConsumerState<WorshipScreen> {
     {'name': '회개', 'icon': '⛪'},
   ];
 
-  final List<Map<String, String>> _artists = [
-    {
-      'name': '웨이메이커',
-      'image':
-          'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=100&q=80',
-    },
-    {
-      'name': '레위지파',
-      'image':
-          'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80',
-    },
-    {
-      'name': '마커스워십',
-      'image':
-          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80',
-    },
-    {
-      'name': '어노인팅',
-      'image':
-          'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80',
-    },
-    {
-      'name': '아이제야61',
-      'image':
-          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80',
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,25 +102,35 @@ class _WorshipScreenState extends ConsumerState<WorshipScreen> {
             ),
           ),
 
-          // 4. 인기 아티스트 (Artist Hub)
+          // 4. 인기 찬양 (Popular Worships - Global Hits)
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            sliver: SliverToBoxAdapter(child: _buildSectionTitle('아티스트 허브')),
+            sliver: SliverToBoxAdapter(child: _buildSectionTitle('인기 찬양')),
           ),
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 120,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
-                scrollDirection: Axis.horizontal,
-                itemCount: _artists.length,
-                itemBuilder: (context, index) {
-                  return _buildArtistItem(_artists[index]);
-                },
-              ),
+              height: 180,
+              child: ref
+                  .watch(popularWorshipsProvider)
+                  .when(
+                    data: (songs) => ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: songs.length,
+                      itemBuilder: (context, index) {
+                        return _buildPopularSongItem(songs[index]);
+                      },
+                    ),
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    error: (e, _) => Center(child: Text('오류: $e')),
+                  ),
             ),
           ),
 
@@ -201,7 +183,7 @@ class _WorshipScreenState extends ConsumerState<WorshipScreen> {
         content: TextField(
           controller: controller,
           decoration: const InputDecoration(
-            hintText: '검색어를 입력하세요 (예: 심종호 찬양)',
+            hintText: '무엇이든 검색하세요 (예: Hillsong, 마커스)',
             border: OutlineInputBorder(),
           ),
           onSubmitted: (value) {
@@ -357,37 +339,65 @@ class _WorshipScreenState extends ConsumerState<WorshipScreen> {
     );
   }
 
-  Widget _buildArtistItem(Map<String, String> artist) {
+  Widget _buildPopularSongItem(Song song) {
     return GestureDetector(
-      onTap: () {
-        ref.read(selectedCategoryProvider.notifier).state = artist['name'];
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+      onTap: () => ref.read(playerProvider.notifier).play(song),
+      child: Container(
+        width: 140,
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: AppTheme.softShadow,
+        ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.primary, width: 2),
-              ),
-              child: ClipOval(
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
                 child: Image.network(
-                  artist['image']!,
+                  song.cover,
+                  width: double.infinity,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: AppColors.primary.withValues(alpha: 0.1),
-                    child: const Icon(Icons.person, color: AppColors.primary),
+                    child: const Icon(
+                      Icons.music_note,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              artist['name']!,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    song.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    song.artist,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

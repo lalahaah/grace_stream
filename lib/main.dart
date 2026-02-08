@@ -120,13 +120,13 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
             if (playerState.showVideo)
               _buildVideoOverlay(playerState, playerWidget)
             else
-              // 화면 구석에 작게 렌더링 (엔진 활성화를 위해 불투명도와 크기 조절)
+              // 화면에서 보이지 않도록 좌측 멀리 배치하고 투명도를 낮춤 (엔진 활성화를 위해 렌더링은 유지)
               Positioned(
                 top: 0,
-                left: 0,
+                left: -1000,
                 child: Opacity(
-                  opacity: 0.1,
-                  child: SizedBox(width: 40, height: 40, child: playerWidget),
+                  opacity: 0.01,
+                  child: SizedBox(width: 1, height: 1, child: playerWidget),
                 ),
               ),
 

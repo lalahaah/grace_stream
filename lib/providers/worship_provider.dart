@@ -21,18 +21,35 @@ final worshipAIRecommendationProvider = FutureProvider<String>((ref) async {
   );
 });
 
+final popularWorshipsProvider = FutureProvider<List<Song>>((ref) async {
+  final youtubeService = ref.watch(youtubeServiceProvider);
+  // 글로벌 인기 찬양 검색 (조회수 정렬)
+  return youtubeService.searchWorship(
+    "Global CCM Worship Hits",
+    order: 'viewCount',
+  );
+});
+
 final selectedCategoryProvider = StateProvider<String?>((ref) => null);
 
 final worshipSearchResultsProvider = FutureProvider<List<Song>>((ref) async {
   final selectedCat = ref.watch(selectedCategoryProvider);
   final youtubeService = ref.watch(youtubeServiceProvider);
 
-  // Default query for initial screen
-  final query = selectedCat ?? "인기 CCM";
+  // 테마별 글로벌 검색어 매칭 보강
+  String queryStr = selectedCat ?? "인기 CCM";
+  if (selectedCat == "평안") queryStr = "Peaceful Worship CCM";
+  if (selectedCat == "감사") queryStr = "Gratitude Praise Worship";
+  if (selectedCat == "위로") queryStr = "Comforting Worship Songs";
+  if (selectedCat == "용기") queryStr = "Courage Faith Worship CCM";
+  if (selectedCat == "기쁨") queryStr = "Joyful Praise Worship";
+  if (selectedCat == "소망") queryStr = "Hopeful Worship CCM";
+  if (selectedCat == "간구") queryStr = "Prayer Worship Songs";
+  if (selectedCat == "회개") queryStr = "Repentance Worship Hymns";
 
   // Real YouTube search
   final results = await youtubeService.searchWorship(
-    query == "오늘의 추천 찬양" || query == "추천 찬양" ? "인기 찬양 베스트" : "$query 찬양",
+    queryStr == "오늘의 추천 찬양" || queryStr == "추천 찬양" ? "인기 찬양 베스트" : queryStr,
   );
 
   if (results.isEmpty) {
