@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grace_stream/providers/bible_provider.dart';
+import 'package:grace_stream/providers/bible_settings_provider.dart';
 import 'package:grace_stream/theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:grace_stream/constants/bible_constants.dart';
 import 'package:grace_stream/services/user_action_service.dart';
 import 'package:grace_stream/services/ai_service.dart';
@@ -435,9 +437,10 @@ class BibleViewerScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentPos = ref.watch(currentPositionProvider);
     final bookName = BibleConstants.getBookName(currentPos.bookId);
+    final settings = ref.watch(bibleSettingsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: Color(settings.backgroundColorValue),
       appBar: CommonAppBar.standard(
         context,
         centerWidget: InkWell(
@@ -612,7 +615,7 @@ class BibleViewerScreen extends ConsumerWidget {
                               Expanded(
                                 child: SelectableText(
                                   verse.text,
-                                  style: AppTheme.bibleTextStyle,
+                                  style: _getBibleStyle(settings),
                                   contextMenuBuilder: (context, editableTextState) {
                                     return AdaptiveTextSelectionToolbar.buttonItems(
                                       anchors:
@@ -725,5 +728,56 @@ class BibleViewerScreen extends ConsumerWidget {
         child: icon != null ? Icon(icon, size: 18, color: Colors.grey) : null,
       ),
     );
+  }
+
+  TextStyle _getBibleStyle(settings) {
+    final backgroundColor = Color(settings.backgroundColorValue);
+    final isDark = backgroundColor.computeLuminance() < 0.35;
+    final textColor = isDark ? Colors.white : AppColors.textMain;
+
+    switch (settings.fontFamily) {
+      case 'Nanum Myeongjo':
+        return GoogleFonts.nanumMyeongjo(
+          fontSize: settings.fontSize,
+          height: settings.lineHeight,
+          letterSpacing: settings.letterSpacing,
+          color: textColor,
+        );
+      case 'Nanum Gothic':
+        return GoogleFonts.nanumGothic(
+          fontSize: settings.fontSize,
+          height: settings.lineHeight,
+          letterSpacing: settings.letterSpacing,
+          color: textColor,
+        );
+      case 'Noto Sans KR':
+        return GoogleFonts.notoSansKr(
+          fontSize: settings.fontSize,
+          height: settings.lineHeight,
+          letterSpacing: settings.letterSpacing,
+          color: textColor,
+        );
+      case 'Gowun Batang':
+        return GoogleFonts.gowunBatang(
+          fontSize: settings.fontSize,
+          height: settings.lineHeight,
+          letterSpacing: settings.letterSpacing,
+          color: textColor,
+        );
+      case 'Gowun Dodum':
+        return GoogleFonts.gowunDodum(
+          fontSize: settings.fontSize,
+          height: settings.lineHeight,
+          letterSpacing: settings.letterSpacing,
+          color: textColor,
+        );
+      default:
+        return TextStyle(
+          fontSize: settings.fontSize,
+          height: settings.lineHeight,
+          letterSpacing: settings.letterSpacing,
+          color: textColor,
+        );
+    }
   }
 }

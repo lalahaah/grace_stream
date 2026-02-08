@@ -3,7 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grace_stream/theme/app_theme.dart';
 import 'package:grace_stream/screens/bible_viewer_screen.dart';
 import 'package:grace_stream/screens/worship_screen.dart';
+import 'package:grace_stream/screens/bible_settings_screen.dart';
+import 'package:grace_stream/screens/app_settings_screens.dart';
+import 'package:grace_stream/screens/info_screens.dart';
+import 'package:grace_stream/screens/form_screens.dart';
 import 'package:grace_stream/providers/player_provider.dart';
+import 'package:grace_stream/models/bible_settings.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:grace_stream/services/user_action_service.dart';
 import 'package:grace_stream/models/bible.dart';
@@ -25,6 +30,9 @@ void main() async {
   }
   if (!Hive.isAdapterRegistered(2)) {
     Hive.registerAdapter(BookmarkAdapter());
+  }
+  if (!Hive.isAdapterRegistered(3)) {
+    Hive.registerAdapter(BibleSettingsAdapter());
   }
 
   // Initialize User Action Service
@@ -118,7 +126,6 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
           // 2. 성경 및 플레이어 설정 (Setting Section)
           _buildDrawerSectionTitle('환경 설정'),
           _buildDrawerItem(Icons.font_download_outlined, '성경 폰트 및 스타일'),
-          _buildDrawerItem(Icons.color_lens_outlined, '배경색 선택'),
           _buildDrawerItem(Icons.high_quality_outlined, '오디오 품질 설정'),
           _buildDrawerItem(Icons.timer_outlined, '취면 예약'),
 
@@ -135,6 +142,8 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
           // 4. 고객 지원 및 법적 고지 (Support Section)
           _buildDrawerSectionTitle('지원'),
           _buildDrawerItem(Icons.info_outline, '출처 및 저작권'),
+          _buildDrawerItem(Icons.description_outlined, '이용약관'),
+          _buildDrawerItem(Icons.privacy_tip_outlined, '개인정보 처리방침'),
           _buildDrawerItem(Icons.help_outline, '자주 묻는 질문 (FAQ)'),
           _buildDrawerItem(Icons.contact_support_outlined, '1:1 문의'),
           _buildDrawerItem(Icons.code_outlined, '오픈소스 라이선스'),
@@ -238,7 +247,76 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
           fontWeight: FontWeight.w500,
         ),
       ),
-      onTap: () => Navigator.pop(context),
+      onTap: () {
+        Navigator.pop(context); // Close drawer
+
+        Widget? screen;
+        switch (title) {
+          case '성경 폰트 및 스타일':
+          case '배경색 선택':
+            screen = const BibleSettingsScreen();
+            break;
+          case '오디오 품질 설정':
+            screen = const AudioSettingsScreen();
+            break;
+          case '취면 예약':
+            screen = const SleepTimerScreen();
+            break;
+          case 'CCM 아티스트 등록':
+          case '찬양 추천하기':
+          case '공지사항 및 이벤트':
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('서비스 준비 중입니다. 곧 찾아뵙겠습니다!'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+            return;
+          case '출처 및 저작권':
+            screen = const InfoScreen(
+              title: '출처 및 저작권',
+              content: CopyrightScreen(),
+            );
+            break;
+          case '이용약관':
+            screen = const InfoScreen(
+              title: '이용약관',
+              content: TermsOfServiceScreen(),
+            );
+            break;
+          case '개인정보 처리방침':
+            screen = const InfoScreen(
+              title: '개인정보 처리방침',
+              content: PrivacyPolicyScreen(),
+            );
+            break;
+          case '자주 묻는 질문 (FAQ)':
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('서비스 준비 중입니다. 곧 찾아뵙겠습니다!'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+            return;
+          case '1:1 문의':
+            screen = const InquiryScreen();
+            break;
+          case '오픈소스 라이선스':
+            showLicensePage(
+              context: context,
+              applicationName: 'Grace Stream',
+              applicationVersion: '1.0.0',
+            );
+            return;
+        }
+
+        if (screen != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => screen!),
+          );
+        }
+      },
     );
   }
 
@@ -510,7 +588,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   final Map<String, Map<String, String>> _emotionContent = {
     '위로': {
-      'verse': '"수고하고 무거운 짐 진 자들아 다 내게로 오라 내가 너희를 쉬게 하리라"',
+      'verse': '"수고하고 무거운 짐 진 자들아 다 내게로 오라 내가 내희를 쉬게 하리라"',
       'ref': '마태복음 11:28',
       'ai': '지친 당신의 마음을 주님께서 알고 계십니다. 오늘 하루 주님 안에서 참된 안식을 누리시길 기도합니다.',
       'ccm': '어노인팅 - 내 모습 이대로',
@@ -522,16 +600,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       'ccm': '마커스워십 - 감사함으로',
     },
     '평안': {
-      'verse': '"태초에 하나님이 천지를 창조하시니라"',
-      'ref': '창세기 1:1',
-      'ai': '이 구절은 모든 존재의 근원이 하나님임을 선포합니다. 혼돈 속에서 질서를 만드시는 하나님의 능력을 묵상해보세요.',
-      'ccm': '주 하나님 지으신 모든 세계',
+      'verse': '"나의 평안을 너희에게 주노라 내가 너희에게 주는 것은 세상이 주는 것과 같지 아니하니라"',
+      'ref': '요한복음 14:27',
+      'ai': '세상이 줄 수 없는 하늘의 평안이 당신의 마음과 생각을 지키시길 원합니다.',
+      'ccm': '평안을 너에게 주노라',
     },
     '용기': {
       'verse': '"강하고 담대하라 두려워하지 말며 놀라지 말라 네가 어디로 가든지 네 하나님 여호와가 너와 함께 하느니라"',
       'ref': '여호수아 1:9',
       'ai': '주님께서 당신과 함께 걸어가고 계십니다. 어떤 도전 앞에서도 두려워하지 말고 믿음으로 전진하세요.',
       'ccm': '예수전도단 - 주님 우리게 하신 일',
+    },
+    '기쁨': {
+      'verse': '"주 안에서 항상 기뻐하라 내가 다시 말하노니 기뻐하라"',
+      'ref': '빌립보서 4:4',
+      'ai': '환경에 좌우되지 않는 주님의 기쁨이 당신의 힘이 되길 소망합니다.',
+      'ccm': '기뻐하며 경배하세',
+    },
+    '소망': {
+      'verse': '"소망의 하나님이 모든 기쁨과 평강을 믿음 안에서 너희에게 충만하게 하사"',
+      'ref': '로마서 15:13',
+      'ai': '우리의 유일한 소망 되신 주님만을 바라볼 때, 하늘의 위로가 넘쳐날 것입니다.',
+      'ccm': '이 몸의 소망 무언가',
+    },
+    '인도': {
+      'verse': '"사람이 마음으로 자기의 길을 계획할지라도 그의 걸음을 인도하시는 이는 여호와시니라"',
+      'ref': '잠언 16:9',
+      'ai': '오늘 당신의 모든 걸음을 주님께 맡겨보세요. 가장 선한 길로 인도하실 것입니다.',
+      'ccm': '주님 말씀하시면',
+    },
+    '휴식': {
+      'verse': '"그가 나를 푸른 풀밭에 누이시며 쉴 만한 물가로 인도하시는도다"',
+      'ref': '시편 23:2',
+      'ai': '바쁜 일상 속에서도 주님이 주시는 쉼을 누리세요. 영혼이 새롭게 소생할 것입니다.',
+      'ccm': '목마른 사슴',
     },
   };
 
@@ -649,55 +751,87 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildCategoryGrid() {
     final categories = [
-      {'name': '위로', 'icon': '🕊️'},
-      {'name': '감사', 'icon': '🙏'},
       {'name': '평안', 'icon': '🌿'},
+      {'name': '감사', 'icon': '🙏'},
+      {'name': '위로', 'icon': '🕊️'},
       {'name': '용기', 'icon': '🦁'},
+      {'name': '기쁨', 'icon': '☀️'},
+      {'name': '소망', 'icon': '⚓'},
+      {'name': '인도', 'icon': '🗺️'},
+      {'name': '휴식', 'icon': '🛋️'},
     ];
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: categories.map((cat) {
-        final isSelected = _selectedEmotion == cat['name'];
-        return GestureDetector(
-          onTap: () => setState(() => _selectedEmotion = cat['name']!),
-          child: Column(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: AppTheme.softShadow,
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.primary
-                        : AppColors.backgroundLight,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    cat['icon']!,
-                    style: const TextStyle(fontSize: 24),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                cat['name']!,
-                style: TextStyle(
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                ),
-              ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(bottom: 16),
+          child: Text(
+            '오늘의 감정',
+            style: TextStyle(
+              color: AppColors.textMain,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        );
-      }).toList(),
+        ),
+        SizedBox(
+          height: 100,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final cat = categories[index];
+              final isSelected = _selectedEmotion == cat['name'];
+              return Padding(
+                padding: const EdgeInsets.only(right: 20),
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedEmotion = cat['name']!),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppColors.primary : Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: AppTheme.softShadow,
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.backgroundLight,
+                            width: 2,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            cat['icon']!,
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        cat['name']!,
+                        style: TextStyle(
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                          fontSize: 11,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
