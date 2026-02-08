@@ -45,7 +45,7 @@ dependencies:
   cloud_firestore: ^5.6.1
 
   # AI
-  google_generative_ai: ^0.4.3
+  google_generative_ai: ^0.4.7
 
   # Media
   youtube_player_flutter: ^9.1.1

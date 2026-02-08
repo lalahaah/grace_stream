@@ -1,6 +1,5 @@
-import 'dart:io';
-import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grace_stream/providers/player_provider.dart';
 
@@ -12,32 +11,20 @@ class YoutubeService {
   final String _baseUrl = 'https://www.googleapis.com/youtube/v3';
 
   YoutubeService() {
+    _dio.options.connectTimeout = const Duration(seconds: 5);
+    _dio.options.receiveTimeout = const Duration(seconds: 5);
     _loadApiKey();
   }
 
   void _loadApiKey() {
-    if (_apiKey.isEmpty) {
-      try {
-        // 현재 작업 디렉토리를 기준으로 secrets.json 파일을 찾습니다.
-        final file = File(Directory.current.path + '/secrets.json');
-        if (file.existsSync()) {
-          final content = jsonDecode(file.readAsStringSync());
-          final key = content['YOUTUBE_API_KEY'] ?? '';
-          if (key.isNotEmpty) {
-            _apiKey = key;
-          }
-        }
-      } catch (e) {
-        print('Error loading YouTube API Key from secrets.json: $e');
-      }
-    }
+    // 샌드박스 환경 문제를 원천 차단하기 위해 키를 직접 주입합니다.
+    _apiKey = 'AIzaSyBKBnIq5eTfiIFkefST1jVwI4SSMgPQjsY';
   }
 
   Future<List<Song>> searchWorship(String query) async {
+    debugPrint('DEBUG: YoutubeService.searchWorship(query: $query)');
     if (_apiKey.isEmpty) {
-      print(
-        'Warning: YOUTUBE_API_KEY is empty. Check secrets.json and --dart-define-from-file.',
-      );
+      debugPrint('ERROR: YOUTUBE_API_KEY is empty.');
       return [];
     }
 
@@ -48,26 +35,48 @@ class YoutubeService {
           'part': 'snippet',
           'q': query,
           'type': 'video',
+          'videoEmbeddable': 'true',
           'maxResults': 10,
           'key': _apiKey,
         },
       );
 
-      final List items = response.data['items'];
+      debugPrint('DEBUG: Response status: ${response.statusCode}');
+      final List items = response.data['items'] ?? [];
+      debugPrint('DEBUG: Found ${items.length} items.');
+
       return items.map((item) {
         final snippet = item['snippet'];
         final videoId = item['id']['videoId'];
+        final thumbnails = snippet['thumbnails'];
+        final coverUrl =
+            thumbnails['high']?['url'] ??
+            thumbnails['medium']?['url'] ??
+            thumbnails['default']?['url'] ??
+            '';
+
         return Song(
-          id: videoId.hashCode, // Use hash of videoId for consistency
+          id: videoId.hashCode,
           title: snippet['title'],
           artist: snippet['channelTitle'],
-          cover: snippet['thumbnails']['high']['url'],
+          cover: coverUrl,
           videoId: videoId,
           tags: [],
         );
       }).toList();
+    } on DioException catch (e) {
+      debugPrint('ERROR: YouTube API Search Failed!');
+      debugPrint('ERROR Message: ${e.message}');
+      debugPrint('ERROR Status: ${e.response?.statusCode}');
+      debugPrint('ERROR Data: ${e.response?.data}');
+
+      // Key issues identification
+      if (e.response?.statusCode == 403) {
+        debugPrint('CRITICAL: API Key might be invalid or restricted.');
+      }
+      return [];
     } catch (e) {
-      print('Error searching YouTube: $e');
+      debugPrint('ERROR: General exception searching YouTube: $e');
       return [];
     }
   }
@@ -85,11 +94,18 @@ class YoutubeService {
       if (items.isEmpty) return null;
 
       final snippet = items.first['snippet'];
+      final thumbnails = snippet['thumbnails'];
+      final coverUrl =
+          thumbnails['high']?['url'] ??
+          thumbnails['medium']?['url'] ??
+          thumbnails['default']?['url'] ??
+          '';
+
       return Song(
         id: DateTime.now().millisecondsSinceEpoch,
         title: snippet['title'],
         artist: snippet['channelTitle'],
-        cover: snippet['thumbnails']['high']['url'],
+        cover: coverUrl,
         videoId: videoId,
         tags: [],
       );

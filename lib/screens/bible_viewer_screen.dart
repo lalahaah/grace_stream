@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grace_stream/providers/bible_provider.dart';
+import 'package:grace_stream/models/bible_settings.dart';
 import 'package:grace_stream/providers/bible_settings_provider.dart';
+import 'package:grace_stream/providers/reading_goal_provider.dart';
 import 'package:grace_stream/theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:grace_stream/constants/bible_constants.dart';
@@ -280,8 +282,7 @@ class BibleViewerScreen extends ConsumerWidget {
               minChildSize: 0.5,
               maxChildSize: 0.95,
               builder: (_, scrollController) => GestureDetector(
-                onTap:
-                    () {}, // Prevent clicking inside the sheet from closing it
+                onTap: () {},
                 child: Container(
                   decoration: const BoxDecoration(
                     color: Colors.white,
@@ -311,7 +312,6 @@ class BibleViewerScreen extends ConsumerWidget {
                       Expanded(
                         child: Row(
                           children: [
-                            // Book List (Left)
                             Expanded(
                               flex: 5,
                               child: ListView.builder(
@@ -347,14 +347,13 @@ class BibleViewerScreen extends ConsumerWidget {
                                         bookId: bookId,
                                         chapter: "1",
                                       );
-                                      setModalState(() {}); // Refresh grid
+                                      setModalState(() {});
                                     },
                                   );
                                 },
                               ),
                             ),
                             const VerticalDivider(width: 1),
-                            // Chapter Grid (Right)
                             Expanded(
                               flex: 7,
                               child: FutureBuilder<List<String>>(
@@ -457,7 +456,7 @@ class BibleViewerScreen extends ConsumerWidget {
                 Text(
                   '$bookName ${currentPos.chapter}장',
                   style: const TextStyle(
-                    fontSize: 14, // 홈 화면 스타일과 맞추기 위해 약간 축소
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
                   ),
@@ -497,54 +496,134 @@ class BibleViewerScreen extends ConsumerWidget {
                             top: 24.0,
                             bottom: 100.0,
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          child: Column(
                             children: [
-                              TextButton.icon(
-                                onPressed: () {
-                                  ref
-                                      .read(bibleServiceProvider)
-                                      .getPreviousChapter(
-                                        currentPos.bookId,
-                                        currentPos.chapter,
-                                      )
-                                      .then((prev) {
-                                        if (prev != null) {
-                                          ref
-                                                  .read(
-                                                    currentPositionProvider
-                                                        .notifier,
-                                                  )
-                                                  .state =
-                                              prev;
-                                        }
-                                      });
-                                },
-                                icon: const Icon(Icons.arrow_back),
-                                label: const Text('이전 장'),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  TextButton.icon(
+                                    onPressed: () {
+                                      ref
+                                          .read(bibleServiceProvider)
+                                          .getPreviousChapter(
+                                            currentPos.bookId,
+                                            currentPos.chapter,
+                                          )
+                                          .then((prev) {
+                                            if (prev != null) {
+                                              ref
+                                                      .read(
+                                                        currentPositionProvider
+                                                            .notifier,
+                                                      )
+                                                      .state =
+                                                  prev;
+                                            }
+                                          });
+                                    },
+                                    icon: const Icon(Icons.arrow_back),
+                                    label: const Text('이전 장'),
+                                  ),
+                                  TextButton.icon(
+                                    onPressed: () {
+                                      ref
+                                          .read(bibleServiceProvider)
+                                          .getNextChapter(
+                                            currentPos.bookId,
+                                            currentPos.chapter,
+                                          )
+                                          .then((next) {
+                                            if (next != null) {
+                                              ref
+                                                      .read(
+                                                        currentPositionProvider
+                                                            .notifier,
+                                                      )
+                                                      .state =
+                                                  next;
+                                            }
+                                          });
+                                    },
+                                    icon: const Icon(Icons.arrow_forward),
+                                    label: const Text('다음 장'),
+                                  ),
+                                ],
                               ),
-                              TextButton.icon(
-                                onPressed: () {
-                                  ref
-                                      .read(bibleServiceProvider)
-                                      .getNextChapter(
-                                        currentPos.bookId,
-                                        currentPos.chapter,
-                                      )
-                                      .then((next) {
-                                        if (next != null) {
-                                          ref
-                                                  .read(
-                                                    currentPositionProvider
-                                                        .notifier,
-                                                  )
-                                                  .state =
-                                              next;
-                                        }
-                                      });
+                              const SizedBox(height: 32),
+                              Consumer(
+                                builder: (context, ref, child) {
+                                  final goal = ref.watch(readingGoalProvider);
+                                  if (goal == null ||
+                                      goal.bookId != currentPos.bookId) {
+                                    return const SizedBox.shrink();
+                                  }
+
+                                  final chNum = int.tryParse(
+                                    currentPos.chapter,
+                                  );
+                                  final isRead =
+                                      chNum != null &&
+                                      goal.readChapters.contains(chNum);
+
+                                  return Center(
+                                    child: SizedBox(
+                                      width: 240,
+                                      height: 56,
+                                      child: ElevatedButton.icon(
+                                        onPressed: isRead
+                                            ? null
+                                            : () {
+                                                if (chNum != null) {
+                                                  ref
+                                                      .read(
+                                                        readingGoalProvider
+                                                            .notifier,
+                                                      )
+                                                      .markAsRead(
+                                                        currentPos.bookId,
+                                                        chNum,
+                                                      );
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                        '읽기 완료 처리되었습니다!',
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                        icon: Icon(
+                                          isRead
+                                              ? Icons.check_circle
+                                              : Icons.check_circle_outline,
+                                          size: 20,
+                                        ),
+                                        label: Text(
+                                          isRead ? '읽기 완료됨' : '이 장을 읽음으로 표시',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: isRead
+                                              ? Colors.grey[400]
+                                              : AppColors.primary,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                          ),
+                                          elevation: isRead ? 0 : 4,
+                                        ),
+                                      ),
+                                    ),
+                                  );
                                 },
-                                icon: const Icon(Icons.arrow_forward),
-                                label: const Text('다음 장'),
                               ),
                             ],
                           ),
@@ -730,7 +809,7 @@ class BibleViewerScreen extends ConsumerWidget {
     );
   }
 
-  TextStyle _getBibleStyle(settings) {
+  TextStyle _getBibleStyle(BibleSettings settings) {
     final backgroundColor = Color(settings.backgroundColorValue);
     final isDark = backgroundColor.computeLuminance() < 0.35;
     final textColor = isDark ? Colors.white : AppColors.textMain;

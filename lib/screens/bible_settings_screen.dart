@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:grace_stream/models/bible_settings.dart';
 import 'package:grace_stream/providers/bible_settings_provider.dart';
 import 'package:grace_stream/theme/app_theme.dart';
 
@@ -130,7 +131,7 @@ class BibleSettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPreview(settings) {
+  Widget _buildPreview(BibleSettings settings) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.all(24),
@@ -162,7 +163,10 @@ class BibleSettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBackgroundColorSelector(settings, notifier) {
+  Widget _buildBackgroundColorSelector(
+    BibleSettings settings,
+    BibleSettingsNotifier notifier,
+  ) {
     final colors = [
       {'name': '화이트', 'color': 0xFFFFFFFF},
       {'name': '라이트', 'color': 0xFFF7F8FA},
@@ -214,7 +218,10 @@ class BibleSettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildFontFamilySelector(settings, notifier) {
+  Widget _buildFontFamilySelector(
+    BibleSettings settings,
+    BibleSettingsNotifier notifier,
+  ) {
     final fonts = [
       {'name': '나눔명조', 'family': 'Nanum Myeongjo'},
       {'name': '나눔고딕', 'family': 'Nanum Gothic'},
@@ -315,7 +322,7 @@ class BibleSettingsScreen extends ConsumerWidget {
     );
   }
 
-  TextStyle _getBibleStyle(settings) {
+  TextStyle _getBibleStyle(BibleSettings settings) {
     final backgroundColor = Color(settings.backgroundColorValue);
     final isDark = backgroundColor.computeLuminance() < 0.35; // 기준값 조정
     final textColor = isDark ? Colors.white : AppColors.textMain;

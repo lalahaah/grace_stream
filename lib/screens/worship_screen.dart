@@ -159,32 +159,30 @@ class _WorshipScreenState extends ConsumerState<WorshipScreen> {
           ),
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            sliver: ref
-                .watch(worshipSearchResultsProvider)
-                .when(
-                  data: (songs) {
-                    if (songs.isEmpty) {
-                      return const SliverToBoxAdapter(
-                        child: Center(child: Text('검색 결과가 없습니다.')),
-                      );
-                    }
-                    return SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final song = songs[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _buildWorshipItem(song),
-                        );
-                      }, childCount: songs.length),
+            sliver: Builder(
+              builder: (context) {
+                final songs = ref.watch(filteredWorshipsProvider);
+                if (songs.isEmpty) {
+                  return const SliverToBoxAdapter(
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(40.0),
+                        child: Text('찬양 정보를 불러오는 중입니다...'),
+                      ),
+                    ),
+                  );
+                }
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final song = songs[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _buildWorshipItem(song),
                     );
-                  },
-                  loading: () => const SliverToBoxAdapter(
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                  error: (e, _) => SliverToBoxAdapter(
-                    child: Center(child: Text('오유가 발생했습니다: $e')),
-                  ),
-                ),
+                  }, childCount: songs.length),
+                );
+              },
+            ),
           ),
 
           // Bottom Spacing
